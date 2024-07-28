@@ -19,5 +19,8 @@
 #include <common.h>
 
 word_t expr(char *e, bool *success);
-
+bool watch_change();
+void free_wp(int NO);
+void new_wp(char *exp);
+void wp_display();
 #endif

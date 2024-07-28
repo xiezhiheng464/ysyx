@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -52,9 +53,25 @@ static int cmd_q(char *args) {
   nemu_state.state = NEMU_QUIT;
   return -1;
 }
-
+static int cmd_x(char *args){
+  char *arg=strtok(NULL," ");
+  if(arg==NULL){printf("you need to give a number and the beginning address\n");return 0;}
+  int number=atoi(arg);
+  char *arg2=strtok(NULL," ");
+  if(arg2==NULL){printf("you need to give the beginning address\n");return 0;}
+  word_t address;
+  sscanf(arg2,"%x",&address);
+  for(int i=0;i<number;i++){
+	printf("0x%x:   %x\n",address+4*i,vaddr_read(address+4*i,4));
+  }
+  return 0;
+}
 static int cmd_help(char *args);
-
+static int cmd_si(char *args);
+static int cmd_d(char *args);
+static int cmd_p(char *args);
+static int cmd_w(char *args);
+static int cmd_info(char *args);
 static struct {
   const char *name;
   const char *description;
@@ -63,13 +80,71 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "Execute the given steps",cmd_si },
+  { "info", "Print the needed data, r for register and w for watchpoints",cmd_info},
+  { "x", "Check the given memory, you need to given a number and the beginning address",cmd_x},
+  { "p","Calculate the expression",cmd_p },
+  { "w","add the expr to the watchpoints",cmd_w },
+  { "d","delete the watchpoint according to the NO",cmd_d }
   /* TODO: Add more commands */
-
 };
 
 #define NR_CMD ARRLEN(cmd_table)
+static int cmd_si(char *args){
+  char *arg=strtok(NULL," ");
+  if(arg==NULL){
+	cpu_exec(1);
+	return 0;
+  }
+  int step=atoi(arg);
+  cpu_exec(step);
+  return 0;
+}
+static int cmd_d(char *args){
+  char *arg=strtok(NULL," ");
+  if(arg==NULL){
+	printf("you need to give the NO of the watchpoint you want to delete\n");
+	return 0;
+  }
+  int NO=atoi(arg);
+  free_wp(NO);
+  return 0;
+}
 
+static int cmd_info(char *args){
+  char *arg=strtok(NULL," ");
+  if(arg==NULL){
+	  printf("you need to give r or w option,r for register,w for watchpoints\n");
+	  return 0;
+  }
+  bool is_r=strcmp(arg, "r");
+  bool is_w=strcmp(arg, "w");
+  if(is_r==0){isa_reg_display();}
+  else if(is_w==0){wp_display();} 	
+  else printf("you need to give r or w option,r for register,w for watchpoints\n");
+  return 0;
+}
+static int cmd_w(char *args){
+  if(args==NULL){
+	  printf("you need to give the expression\n");
+	  return 0;
+  } 
+  new_wp(args);  
+  return 0;
+}
+
+static int cmd_p(char *args){
+  if(args==NULL){
+	  printf("you need to give the calculated expression\n");
+	  return 0;
+  } 
+  //char test[]={"50 + 4 * 3 /( 1 - 2)"};
+  bool k;
+  word_t res=expr(args,&k);
+  if(!k)  printf("you need to give the valid expression\n");
+  else printf("%u\n",res);
+  return 0;
+}
 static int cmd_help(char *args) {
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
@@ -98,6 +173,7 @@ void sdb_set_batch_mode() {
 }
 
 void sdb_mainloop() {
+  //sdb_set_batch_mode();
   if (is_batch_mode) {
     cmd_c(NULL);
     return;
