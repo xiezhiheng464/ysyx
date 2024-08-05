@@ -1,4 +1,5 @@
 #include "veri.h"
+#include "init.h"
 VerilatedContext* contextp = new VerilatedContext;
 VerilatedVcdC* tfp = new VerilatedVcdC; //初始化VCD对象指针
 Vtop* top = new Vtop{contextp};
@@ -19,10 +20,24 @@ void init_verilator(int argc, char** argv){
 };
 void rst(int n){
     top->rst = 1;
-    top->clk = 0;
-    contextp->timeInc(n); //推动仿真时间
+    top->clk = 1;
+    contextp->timeInc(n/4); //推动仿真时间
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
+    top->clk = 0;
+    contextp->timeInc(n/4); //推动仿真时间
+    if (tfp != nullptr)
+      tfp->dump(contextp->time()); //dump wave
+    top->clk = 1;
+    contextp->timeInc(n/4); //推动仿真时间
+    if (tfp != nullptr)
+      tfp->dump(contextp->time()); //dump wave
+    top->clk = 0;
+    contextp->timeInc(n/4); //推动仿真时间
+    if (tfp != nullptr)
+      tfp->dump(contextp->time()); //dump wave
+    top->rst = 0;
+    printf("%08x",top->pc);
 }
 unsigned int inst_read(unsigned int pc){
     if(contextp->time() > 50)
@@ -32,7 +47,7 @@ unsigned int inst_read(unsigned int pc){
 void clk_cycle(int n){ //n需要是个偶数
     top->clk = 1;
     top->rst = 0;
-    top->inst = inst_read(top->pc);
+    top->inst = pmem_read(top->pc,4);
     top->eval();
     if (tfp != nullptr)
     contextp->timeInc(n/2); //推动仿真时间
@@ -40,7 +55,7 @@ void clk_cycle(int n){ //n需要是个偶数
     
     top->clk = 0;
     top->rst = 0;
-    top->inst = inst_read(top->pc);
+    //top->inst = inst_read(top->pc);
     top->eval();
     contextp->timeInc(n/2); //推动仿真时间
     if (tfp != nullptr)

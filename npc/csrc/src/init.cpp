@@ -2,7 +2,6 @@
 #include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <cstring>
 #include <assert.h>
 #include "init.h"
@@ -16,12 +15,37 @@ static int difftest_port = 1234;
 static uint8_t pmem[CONFIG_MSIZE] = {};
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+static uint32_t host_read(void *addr, int len) {                                                                                       
+  switch (len) {
+    case 1: return *(uint8_t  *)addr;
+    case 2: return *(uint16_t *)addr;
+    case 4: return *(uint32_t *)addr;
+    default: assert(0);
+  }
+}
+static void host_write(void *addr, int len, uint32_t data) {
+  switch (len) {
+    case 1: *(uint8_t  *)addr = data; return;
+    case 2: *(uint16_t *)addr = data; return;
+    case 4: *(uint32_t *)addr = data; return;
+    default: assert(0);
+  }
+}
+uint32_t pmem_read(uint32_t addr, int len) {
+  uint32_t ret = host_read(guest_to_host(addr), len);                                                                                         
+  return ret;
+}
+
+void pmem_write(uint32_t addr, int len, uint32_t data) {
+  host_write(guest_to_host(addr), len, data);
+}
+
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
 static long load_img() {
   if (img_file == NULL) {
-    printf("No image is given.Use the default image\n");
+    printf("No image is given. Use the default image\n");
     return 4096; // built-in image size
   }
 
