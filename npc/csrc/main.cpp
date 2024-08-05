@@ -1,6 +1,8 @@
 #include "veri.h"
+#include "init.h"
 int main(int argc, char** argv) {
     init_verilator(argc, argv);
+    init_monitor(argc, argv);
     rst(10);
     int i=10;
     int count=0;
