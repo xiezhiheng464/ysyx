@@ -5,11 +5,15 @@ VFLAGS = -cc -trace --exe --build -j 4 -Wall --top-module top
 all:
 	@echo "Write this Makefile by your self."
 build:
+	@echo verilator $(VFLAGS) $(CSRC) $(VSRC) \
+		-Mdir $(BUILD_DIR) \
+		-CFLAGS -I$(NPC_HOME)/csrc/include
 	@verilator $(VFLAGS) $(CSRC) $(VSRC) \
-		-Mdir $(BUILD_DIR) 
-run: build
-	$(BUILD_DIR)/Vtop
-sim: clean run
+		-Mdir $(BUILD_DIR) \
+		-CFLAGS -I$(NPC_HOME)/csrc/include
+run: clean build
+	$(BUILD_DIR)/Vtop 
+sim: run
 	gtkwave wave.vcd
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 clean: 
