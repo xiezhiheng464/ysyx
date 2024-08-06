@@ -7,10 +7,9 @@ int main(int argc, char** argv) {
     int i=10;
     int count=0;
     while (count<i) {
-        //printf("hello\n");
         clk_cycle(10);
         count++;
-        isa_reg_display();
+        //isa_reg_display();
     }
     free();
     return 0;

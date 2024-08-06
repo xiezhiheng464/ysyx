@@ -31,15 +31,25 @@ static void host_write(void *addr, int len, uint32_t data) {
     default: assert(0);
   }
 }
-uint32_t pmem_read(uint32_t addr, int len) {
-  uint32_t ret = host_read(guest_to_host(addr), len);                                                                                         
-  return ret;
+extern "C" void pmem_read(int raddr, int *rdata)
+{
+  if (raddr < CONFIG_MBASE) return;
+  uint8_t *pt = guest_to_host(raddr) + 7;
+  int ret = 0;
+  for (int i = 0; i < 8; ++i) {
+    ret = (ret << 8) | (*pt--);
+  }
+  *rdata = ret;
 }
-
-void pmem_write(uint32_t addr, int len, uint32_t data) {
-  host_write(guest_to_host(addr), len, data);
+extern "C" void pmem_write(int waddr, int wdata, char mask)
+{
+  if (waddr < CONFIG_MBASE) return;
+  uint8_t *pt = guest_to_host(waddr);
+  for (int i = 0; i < 8; ++i) {
+    if (mask & 1) *pt = (wdata & 0xff);
+    wdata >>= 8, mask >>= 1, pt++;
+  }
 }
-
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }

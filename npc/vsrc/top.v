@@ -1,9 +1,9 @@
 module top (
     input        clk,
     input        rst,
-    input [31:0] inst,
     output reg  [31:0] pc 
 );
+    wire [31:0] inst;
     wire [ 6:0] optcode;
     wire [ 2:0] funcode;
     wire [ 4:0] rd;
@@ -32,6 +32,15 @@ module top (
         .raddr(rs1),
         .rdata(rdata1),
         .wen(optcode == 7'b0010011 & funcode == 3'b000)
+    );
+    MEM mem(
+        .ren(1'b1),
+        .wen(1'b0),
+        .raddr(pc),
+        .rdata(inst),
+        .waddr('b0),
+        .wdata('b0),
+        .mask('b0)
     );
     always @(posedge clk) begin
         if (rst) pc <= 32'h80000000;

@@ -4,14 +4,13 @@ VerilatedContext* contextp = new VerilatedContext;
 VerilatedVcdC* tfp = new VerilatedVcdC; //初始化VCD对象指针
 Vtop* top = new Vtop{contextp};
 extern "C" void ebreak(){
+    tfp->dump(contextp->time()); //dump wave
     printf("ebreak\n");
     delete top;
     delete contextp;
     tfp->close();
     exit(0);
 }
-
-
 void init_verilator(int argc, char** argv){
     contextp->commandArgs(argc, argv);
     contextp->traceEverOn(true); //打开追踪功能
@@ -21,45 +20,43 @@ void init_verilator(int argc, char** argv){
 void rst(int n){
     top->rst = 1;
     top->clk = 1;
-    contextp->timeInc(n/4); //推动仿真时间
+    top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
+    contextp->timeInc(n/4); //推动仿真时间
     top->clk = 0;
-    contextp->timeInc(n/4); //推动仿真时间
+    top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
+    contextp->timeInc(n/4); //推动仿真时间
     top->clk = 1;
-    contextp->timeInc(n/4); //推动仿真时间
+    top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
+    contextp->timeInc(n/4); //推动仿真时间
     top->clk = 0;
-    contextp->timeInc(n/4); //推动仿真时间
+    top->rst = 0;
+    top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
-    top->rst = 0;
-    printf("%08x",top->pc);
+    contextp->timeInc(n/4); //推动仿真时间
 }
-unsigned int inst_read(unsigned int pc){
-    if(contextp->time() > 50)
-        return 0b00000000000100000000000001110011;
-    return 0b00000011000000000000000010010011;
-} 
 void clk_cycle(int n){ //n需要是个偶数
     top->clk = 1;
     top->rst = 0;
-    top->inst = pmem_read(top->pc,4);
+   // top->inst = pmem_read(0x80000000,4);
+    //top->inst = pmem_read(top->pc,4);
     top->eval();
     if (tfp != nullptr)
-    contextp->timeInc(n/2); //推动仿真时间
       tfp->dump(contextp->time()); //dump wave
+    contextp->timeInc(n/2); //推动仿真时间
     
     top->clk = 0;
     top->rst = 0;
-    //top->inst = inst_read(top->pc);
     top->eval();
-    contextp->timeInc(n/2); //推动仿真时间
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
+    contextp->timeInc(n/2); //推动仿真时间
 }
 void free(){
     delete top;
