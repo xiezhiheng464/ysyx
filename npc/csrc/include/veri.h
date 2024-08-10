@@ -14,3 +14,4 @@ void rst(int n);
 unsigned int inst_read(unsigned int pc); 
 void clk_cycle(int n);
 void free();
+void exec_times(unsigned int times,int n);

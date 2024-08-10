@@ -3,6 +3,7 @@
 VerilatedContext* contextp = new VerilatedContext;
 VerilatedVcdC* tfp = new VerilatedVcdC; //初始化VCD对象指针
 Vtop* top = new Vtop{contextp};
+uint32_t *pc = NULL;
 extern "C" void ebreak(){
     tfp->dump(contextp->time()); //dump wave
     printf("ebreak\n");
@@ -16,7 +17,7 @@ void init_verilator(int argc, char** argv){
     contextp->traceEverOn(true); //打开追踪功能
     top->trace(tfp, 0); //
     tfp->open("wave.vcd"); //设置输出的文件wave.vcd
-};
+}
 void rst(int n){
     top->rst = 1;
     top->clk = 1;
@@ -63,3 +64,9 @@ void free(){
     delete contextp;
     tfp->close();
 }
+
+void exec_times(unsigned int times,int n)
+{
+    for(unsigned int i = 0;i < times;i++)
+        clk_cycle(n);
+};

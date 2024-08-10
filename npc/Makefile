@@ -2,7 +2,7 @@ CSRC = $(shell find ./csrc -name "*.cpp" -or -name "*.c" -or -name "*.cc")
 VSRC = $(shell find ./vsrc -name "*.v" -or -name ".sv")
 BUILD_DIR = ./build
 LOG = -l $(NPC_HOME)/log/npc_log.txt
-VFLAGS = -cc -trace --exe --build -j 4 -Wall --top-module top
+VFLAGS = -cc -trace --exe --build -j 4 --top-module top #-Wall 
 all:
 	@echo "Write this Makefile by your self."
 build:
@@ -11,7 +11,8 @@ build:
 		-CFLAGS -I$(NPC_HOME)/csrc/include
 	@verilator $(VFLAGS) $(CSRC) $(VSRC) \
 		-Mdir $(BUILD_DIR) \
-		-CFLAGS -I$(NPC_HOME)/csrc/include
+		-CFLAGS -I$(NPC_HOME)/csrc/include \
+		-LDFLAGS -"lreadline"
 run: clean build
 	$(BUILD_DIR)/Vtop $(LOG) 
 sim: run

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <assert.h>
 #include "init.h"
+#include "sdb.h"
 #define CONFIG_MBASE 0x80000000
 #define CONFIG_MSIZE 0x8000000
 static int is_batch_mode = false;
@@ -31,6 +32,14 @@ static void host_write(void *addr, int len, uint32_t data) {
     default: assert(0);
   }
 }
+uint32_t paddr_read(uint32_t addr,int len)
+{
+    return host_read(guest_to_host(addr),len);
+}
+void paddr_write(uint32_t addr,int len,uint32_t data)
+{
+    host_write(guest_to_host(addr),len,data);
+}
 extern "C" void pmem_read(int raddr, int *rdata)
 {
   if (raddr < CONFIG_MBASE) return;
@@ -50,9 +59,11 @@ extern "C" void pmem_write(int waddr, int wdata, char mask)
     wdata >>= 8, mask >>= 1, pt++;
   }
 }
-void sdb_set_batch_mode() {
-  is_batch_mode = true;
+static void welcome() {
+  Log("Build time: %s, %s", __TIME__, __DATE__);
 }
+
+
 static long load_img() {
   if (img_file == NULL) {
     printf("No image is given. Use the default image\n");
@@ -73,7 +84,7 @@ static long load_img() {
   return size;
 }
 static bool in_pmem(uint32_t addr) {
-  return addr - CONFIG_MBASE < CONFIG_MSIZE;
+  return addr - CONFIG_MBASE < CONFIG_MSIZE && addr >= CONFIG_MBASE;
 }
 
 static int parse_args(int argc, char *argv[]) {
@@ -125,7 +136,7 @@ void init_monitor(int argc, char *argv[]) {
   parse_args(argc, argv);
   /* Set random seed. */
   //init_rand();
-
+  
   /* Open the log file. */
   init_log(log_file);
 
@@ -139,10 +150,11 @@ void init_monitor(int argc, char *argv[]) {
   load_default_img();
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
+  /* Initialize the simple debugger. */
+  init_sdb();
+  welcome();
   /* Initialize differential testing. */
   //init_difftest(diff_so_file, img_size, difftest_port);
 
-  /* Initialize the simple debugger. */
-  //init_sdb();
 }
 

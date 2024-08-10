@@ -1,8 +1,9 @@
 import "DPI-C" function void ebreak();
 module ebreak(
-    input wire [31:0] inst_i
+    input [31:0] inst_i,
+    input clk
 );
-always @(*) begin
+always @(posedge clk) begin
     if(inst_i == 32'h00100073) 
         ebreak();       
 end

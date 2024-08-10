@@ -7,13 +7,16 @@ module RegisterFile #(
     input                  rst,
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
-    input [ADDR_WIDTH-1:0] raddr,
+    input [ADDR_WIDTH-1:0] raddr1,
+    input [ADDR_WIDTH-1:0] raddr2,
     input                  wen,
-    output [DATA_WIDTH-1:0] rdata
+    output [DATA_WIDTH-1:0] rdata1,
+    output [DATA_WIDTH-1:0] rdata2
 );
     integer i;
     initial get_regs(rf);
-    assign rdata= rf[raddr];
+    assign rdata1= rf[raddr1];
+    assign rdata2= rf[raddr2];
     reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0];
     always @(posedge clk) begin
         if (rst) 
