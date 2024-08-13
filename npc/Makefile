@@ -12,7 +12,8 @@ build:
 	@verilator $(VFLAGS) $(CSRC) $(VSRC) \
 		-Mdir $(BUILD_DIR) \
 		-CFLAGS -I$(NPC_HOME)/csrc/include \
-		-LDFLAGS -"lreadline"
+		-LDFLAGS -"lreadline" \
+		-LDFLAGS -"lLLVM-14"
 run: clean build
 	$(BUILD_DIR)/Vtop $(LOG) 
 sim: run

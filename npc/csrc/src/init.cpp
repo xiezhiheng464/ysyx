@@ -1,11 +1,7 @@
-#include <getopt.h>
 #include "log.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <cstring>
-#include <assert.h>
 #include "init.h"
 #include "sdb.h"
+#include "disasm.h"
 #define CONFIG_MBASE 0x80000000
 #define CONFIG_MSIZE 0x8000000
 static int is_batch_mode = false;
@@ -145,7 +141,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize devices. */
   //IFDEF(CONFIG_DEVICE, init_device());
-
+  init_disasm("riscv32-pc-linux-gnu");
   /* Perform ISA dependent initialization. */
   load_default_img();
   /* Load the image to memory. This will overwrite the built-in image. */

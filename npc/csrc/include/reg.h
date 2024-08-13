@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "common.h"
 #include <verilated_dpi.h>
 extern uint32_t *cpu_gpr;  
 extern uint32_t *cpu_pc;  

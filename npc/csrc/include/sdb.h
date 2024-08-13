@@ -12,7 +12,7 @@
 *
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
-#include <stdint.h>
+#include "common.h"
 uint32_t expr(char *e, bool *success);
 bool watch_change();
 void free_wp(int NO);

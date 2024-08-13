@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include "Vtop.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "Vtop__Dpi.h"
 #include "reg.h"
+#include "common.h"
 extern VerilatedContext* contextp;
 extern VerilatedVcdC* tfp; //初始化VCD对象指针
 extern Vtop* top;

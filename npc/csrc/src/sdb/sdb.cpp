@@ -13,8 +13,6 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <readline/readline.h>
-#include <readline/history.h>
 #include "sdb.h"
 #include "veri.h"
 #include "reg.h"
@@ -88,7 +86,7 @@ static struct {
   /* TODO: Add more commands */
 };
 
-#define NR_CMD (int)(sizeof(cmd_table) / sizeof(cmd_table))//ARRLEN(cmd_table)
+#define NR_CMD (int)(sizeof(cmd_table) / sizeof(cmd_table[0]))//ARRLEN(cmd_table)
 static int cmd_si(char *args){
   char *arg=strtok(NULL," ");
   if(arg==NULL){
@@ -192,8 +190,6 @@ void sdb_mainloop() {
     if (args >= str_end) {
       args = NULL;
     }
-
-
     int i;
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {

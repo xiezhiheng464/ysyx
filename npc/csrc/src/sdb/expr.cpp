@@ -17,10 +17,8 @@
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
-#include "assert.h"
-#include "stdio.h"
-#include "string.h"
-#include <regex.h>
+//#include "assert.h"
+//#include "string.h"
 #include "sdb.h"
 #include "init.h"
 enum {

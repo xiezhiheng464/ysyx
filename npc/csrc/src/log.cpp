@@ -14,7 +14,6 @@
 ***************************************************************************************/
 
 #include "log.h"
-#include <cassert>
 FILE *log_fp = NULL;
 void init_log(const char *log_file) {
   log_fp = stdout;
