@@ -6,3 +6,6 @@ uint32_t paddr_read(uint32_t addr,int len);
 void paddr_write(uint32_t addr,int len,uint32_t data);
 uint8_t* guest_to_host(uint32_t paddr);
 uint32_t host_to_guest(uint8_t *haddr);
+#define CONFIG_MBASE 0x80000000
+#define CONFIG_MSIZE 0x8000000
+extern uint8_t pmem[CONFIG_MSIZE];

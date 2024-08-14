@@ -2,14 +2,13 @@
 #include "init.h"
 #include "sdb.h"
 #include "disasm.h"
-#define CONFIG_MBASE 0x80000000
-#define CONFIG_MSIZE 0x8000000
+#include "difftest.h"
 static int is_batch_mode = false;
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
-static uint8_t pmem[CONFIG_MSIZE] = {};
+uint8_t pmem[CONFIG_MSIZE] = {};
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 static uint32_t host_read(void *addr, int len) {                                                                                       
@@ -59,11 +58,18 @@ static void welcome() {
   Log("Build time: %s, %s", __TIME__, __DATE__);
 }
 
+static const uint32_t img [] = {
+  0x00000297,  // auipc t0,0
+  0x00028823,  // sb  zero,16(t0)
+  0x0102c503,  // lbu a0,16(t0)
+  0x00100073,  // ebreak (used as nemu_trap)
+  0xdeadbeef,  // some data
+};
 
 static long load_img() {
   if (img_file == NULL) {
     printf("No image is given. Use the default image\n");
-    return 4096; // built-in image size
+    return sizeof(img); // built-in image size
   }
 
   FILE *fp = fopen(img_file, "rb");
@@ -113,17 +119,11 @@ static int parse_args(int argc, char *argv[]) {
   return 0;
 }
 
-static const uint32_t img [] = {
-  0x00000297,  // auipc t0,0
-  0x00028823,  // sb  zero,16(t0)
-  0x0102c503,  // lbu a0,16(t0)
-  0x00100073,  // ebreak (used as nemu_trap)
-  0xdeadbeef,  // some data
-};
 
 void load_default_img() {
   /* Load built-in image. */
   memcpy(guest_to_host(CONFIG_MBASE), img, sizeof(img));
+  //printf("%ld",sizeof(img));
 }
 
 void init_monitor(int argc, char *argv[]) {
@@ -150,7 +150,9 @@ void init_monitor(int argc, char *argv[]) {
   init_sdb();
   welcome();
   /* Initialize differential testing. */
-  //init_difftest(diff_so_file, img_size, difftest_port);
-
+#ifdef CONFIG_DIFFTEST
+  init_difftest(diff_so_file, img_size);//difftest_port
+  printf("hello\n");
+#endif
 }
 
