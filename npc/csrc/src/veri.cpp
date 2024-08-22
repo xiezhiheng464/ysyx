@@ -1,6 +1,7 @@
 #include "veri.h"
 #include "init.h"
 #include "disasm.h"
+#include "difftest.h"
 VerilatedContext* contextp = new VerilatedContext;
 VerilatedVcdC* tfp = new VerilatedVcdC; //初始化VCD对象指针
 Vtop* top = new Vtop{contextp};
@@ -25,23 +26,12 @@ void rst(int n){
     top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
-    contextp->timeInc(n/4); //推动仿真时间
+    contextp->timeInc(n/2); //推动仿真时间
     top->clk = 0;
     top->eval();
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
-    contextp->timeInc(n/4); //推动仿真时间
-    top->clk = 1;
-    top->eval();
-    if (tfp != nullptr)
-      tfp->dump(contextp->time()); //dump wave
-    contextp->timeInc(n/4); //推动仿真时间
-    top->clk = 0;
-    top->rst = 0;
-    top->eval();
-    if (tfp != nullptr)
-      tfp->dump(contextp->time()); //dump wave
-    contextp->timeInc(n/4); //推动仿真时间
+    contextp->timeInc(n/2); //推动仿真时间
 }
 void Dis_inst(){
    char p[100];
@@ -72,6 +62,9 @@ void clk_cycle(int n){ //n需要是个偶数
     if (tfp != nullptr)
       tfp->dump(contextp->time()); //dump wave
     contextp->timeInc(n/2); //推动仿真时间
+#ifdef CONFIG_DIFFTEST
+    difftest_exec_once();
+#endif 
 }
 void free(){
     delete top;

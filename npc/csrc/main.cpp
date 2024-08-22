@@ -3,10 +3,10 @@
 #include "sdb.h"
 int main(int argc, char** argv) {
     init_verilator(argc, argv);
-    rst(20);
+    rst(10);
+    rst(10);
     init_monitor(argc, argv);
-        //clk_cycle(10);
-        //isa_reg_display();
+    rst(10);
     sdb_mainloop();
     free();
     return 0;

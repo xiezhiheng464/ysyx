@@ -11,6 +11,9 @@ static int difftest_port = 1234;
 uint8_t pmem[CONFIG_MSIZE] = {};
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+static bool in_pmem(uint32_t addr) {
+  return addr - CONFIG_MBASE < CONFIG_MSIZE && addr >= CONFIG_MBASE;
+}
 static uint32_t host_read(void *addr, int len) {                                                                                       
   switch (len) {
     case 1: return *(uint8_t  *)addr;
@@ -35,23 +38,46 @@ void paddr_write(uint32_t addr,int len,uint32_t data)
 {
     host_write(guest_to_host(addr),len,data);
 }
-extern "C" void pmem_read(int raddr, int *rdata)
-{
-  if (raddr < CONFIG_MBASE) return;
-  uint8_t *pt = guest_to_host(raddr) + 7;
+extern "C" void pmem_read_inst(int raddr, int *rdata){
+  if (!in_pmem(raddr)) return;
+  uint8_t *pt = guest_to_host(raddr) + 3;
   int ret = 0;
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 4; ++i) {
+    ret = (ret << 8) | (*pt--);
+  }
+  *rdata = ret;
+};
+extern "C" void pmem_read(int raddr, int *rdata, char mask)
+{
+  if (!in_pmem(raddr)) return;
+  int bits = ( (mask & 3) == 2 )? 4 : ((mask & 3) == 1 ) ? 2 : 1;
+  uint8_t *pt = guest_to_host(raddr) + bits - 1;
+  int signed_extend = ((mask & 4) == 0);
+  if ( bits == 1 && signed_extend){
+    uint8_t ret = *pt;
+    *rdata = ret;
+    return;
+  }
+  if ( bits == 2 && signed_extend){
+    uint16_t ret = *pt;
+    ret = (ret << 8) | (*(pt-1));
+    *rdata = ret;
+    return;
+  }
+  int ret = 0;
+  for (int i = 0; i < bits; ++i) {
     ret = (ret << 8) | (*pt--);
   }
   *rdata = ret;
 }
 extern "C" void pmem_write(int waddr, int wdata, char mask)
 {
-  if (waddr < CONFIG_MBASE) return;
+  if (!in_pmem(waddr)) return;
   uint8_t *pt = guest_to_host(waddr);
-  for (int i = 0; i < 8; ++i) {
-    if (mask & 1) *pt = (wdata & 0xff);
-    wdata >>= 8, mask >>= 1, pt++;
+  int bits = ( (mask & 3) == 2 )? 4 : ((mask & 3) == 1 ) ? 2 : 1;
+  for (int i = 0; i < bits; ++i) {
+    *pt = (wdata & 0xff);
+    wdata >>= 8, pt++;
   }
 }
 static void welcome() {
@@ -84,9 +110,6 @@ static long load_img() {
   assert(ret == 1);
   fclose(fp);
   return size;
-}
-static bool in_pmem(uint32_t addr) {
-  return addr - CONFIG_MBASE < CONFIG_MSIZE && addr >= CONFIG_MBASE;
 }
 
 static int parse_args(int argc, char *argv[]) {
@@ -152,7 +175,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize differential testing. */
 #ifdef CONFIG_DIFFTEST
   init_difftest(diff_so_file, img_size);//difftest_port
-  printf("hello\n");
+  Log("CONFIG_DIFFTEST open");
 #endif
 }
 
