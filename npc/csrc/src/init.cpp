@@ -56,12 +56,14 @@ extern "C" void pmem_read(int raddr, int *rdata, char mask)
   if ( bits == 1 && signed_extend){
     uint8_t ret = *pt;
     *rdata = ret;
+    if((ret & 0x80)){*rdata = (*rdata|0xffffff00);}
     return;
   }
-  if ( bits == 2 && signed_extend){
+  if (bits == 2 && signed_extend){
     uint16_t ret = *pt;
     ret = (ret << 8) | (*(pt-1));
     *rdata = ret;
+    if((ret & 0x8000)){*rdata = (*rdata|0xffff0000);}
     return;
   }
   int ret = 0;

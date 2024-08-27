@@ -4,7 +4,7 @@ module RegisterFile #(
     DATA_WIDTH = 1
 ) (
     input                  clk,
-    input                  rst,
+    input                  rst_n,
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
     input [ADDR_WIDTH-1:0] raddr1,
@@ -18,13 +18,13 @@ module RegisterFile #(
     assign rdata1= rf[raddr1];
     assign rdata2= rf[raddr2];
     reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0];
-    always @(posedge clk) begin
-        if (rst) 
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) 
             for (i=0;i<2**ADDR_WIDTH;i=i+1) //赋初值
                 rf[i]<='d0;
         else
         begin 
-            if (wen) rf[waddr] <= wdata;
+            if (wen && (waddr != 5'b0 )) rf[waddr] <= wdata;
         end
     end
 endmodule

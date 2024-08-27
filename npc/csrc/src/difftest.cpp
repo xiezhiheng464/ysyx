@@ -4,13 +4,13 @@
 #include "init.h"
 #include "log.h"
 #include "difftest.h"
+#include "state.h"
+#include "veri.h"
 enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF }; 
 void (*ref_difftest_memcpy)(uint32_t addr, void *buf, size_t n, bool direction) = NULL; 
 void (*ref_difftest_regcpy)(void *dut, bool direction, void *pc) = NULL; 
 void (*ref_difftest_exec)(uint64_t n) = NULL; 
 void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
-extern uint32_t *cpu_gpr;
-extern uint32_t *cpu_pc;
 uint32_t ref_regs[33];
 uint8_t ref_mems[CONFIG_MSIZE];
 void checkregs(uint32_t *ref_regs)
@@ -33,7 +33,11 @@ void checkregs(uint32_t *ref_regs)
         }
     if (*cpu_pc != ref_regs[32]) printf(ANSI_FG_RED);
     printf("pc : dut = 0x%08x, ref = 0x%08x\n", *cpu_pc, ref_regs[32]);
-    if (*cpu_pc != ref_regs[32]) printf(ANSI_NONE);    
+    if (*cpu_pc != ref_regs[32]) printf(ANSI_NONE);
+    //npc_state = NPC_STOP; 
+    npc_state = NPC_ABORT; 
+    tfp->close();
+    Log("error occurs at step %d, %s",exec_step,last_inst);
     }
 }
 void checkmems(uint8_t *ref_mems,long size){
@@ -43,6 +47,10 @@ void checkmems(uint8_t *ref_mems,long size){
            printf(ANSI_FG_RED);
            printf("mem differ at %08lx, ref:%02x, dut:%02x\n",i+CONFIG_MBASE,ref_mems[i],paddr_read(i+CONFIG_MBASE,1));
            printf(ANSI_NONE);
+           npc_state = NPC_ABORT; 
+           //npc_state = NPC_STOP; 
+           tfp->close();
+           Log("error occurs at step %d, %s",exec_step,last_inst);
         }
         
     };

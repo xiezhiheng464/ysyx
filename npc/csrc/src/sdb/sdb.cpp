@@ -17,6 +17,7 @@
 #include "veri.h"
 #include "reg.h"
 #include "init.h"
+#include "state.h"
 static int is_batch_mode = false;
 
 void init_regex();
@@ -47,7 +48,7 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
-  //nemu_state.state = NEMU_QUIT;
+  npc_state = NPC_QUIT;
   return -1;
 }
 static int cmd_x(char *args){

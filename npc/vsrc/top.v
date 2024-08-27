@@ -1,7 +1,7 @@
 import "DPI-C" function void get_pc(input reg [31:0] pc[]);
 module top (
     input clk,
-    input rst
+    input rst_n
 );
     reg [31:0] pc;
     initial get_pc(pc);
@@ -91,7 +91,7 @@ module top (
         .DATA_WIDTH(32)
     ) r_i (
         .clk   (clk),
-        .rst   (rst),
+        .rst_n   (rst_n),
         .wdata (Rd_Mem_ALU ? MEM_rdata : ALU_result),
         .waddr (inst[11:7]),
         .raddr1(inst[19:15]),
@@ -113,8 +113,8 @@ module top (
         .pc(pc),
         .inst(inst)
     );
-    always @(posedge clk) begin
-        if (rst) pc <= 32'h80000000;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) pc <= 32'h80000000;
         else pc <= pc_next;
     end
 endmodule
