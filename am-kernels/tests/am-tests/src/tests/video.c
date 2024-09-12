@@ -80,9 +80,9 @@ void video_test() {
       last = upt;
       fps ++;
     }
-    if (upt - fps_last > 1000) {
+    if (upt - fps_last >= 1000) {
       // display fps every 1s
-      printf("%d: FPS = %d\n", upt, fps);
+      printf("%d: FPS = %d\n", upt/1000, fps);
       fps_last = upt;
       fps = 0;
     }

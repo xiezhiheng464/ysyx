@@ -21,7 +21,16 @@ void audio_test() {
     nplay += len;
     printf("Already play %d/%d bytes of data\n", nplay, audio_len);
   }
+  //printf("%d\n",io_read(AM_AUDIO_STATUS).count);
 
   // wait until the audio finishes
   while (io_read(AM_AUDIO_STATUS).count > 0);
+  //static uint32_t count = 0;
+  //while (io_read(AM_AUDIO_STATUS).count > 0)
+  //{
+      //if(io_read(AM_AUDIO_STATUS).count != count){
+        //count = io_read(AM_AUDIO_STATUS).count ;
+        //printf("%d\n",io_read(AM_AUDIO_STATUS).count);
+      //}
+  //}
 }

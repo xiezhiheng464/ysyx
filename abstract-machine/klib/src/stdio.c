@@ -6,54 +6,74 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
-}
-
-int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
-}
-void print_deci(int n, char **p, int *count){
-    if(n >= 10) print_deci(n/10, p,count);
-    **p = n % 10 + '0';
-    (*p)++;(*count)++;
-};
-int sprintf(char *out, const char *fmt, ...) {
-    char *s=out;
-    char *p;
-    char *sval;
+    char p[2048];
     va_list args;
-    int ival;
     int count=0;
     va_start(args,fmt);
-    for(p=(char *)fmt;*p;p++){
-		if(*p!='%'){	 /*只要不是 %，这跳过本次循环，进行下一次循环，直到找到下一个%*/
-			*s++=*p;
-            count++;
-            continue;
-		}
-		switch(*++p){
-		case 'd' :
-			ival=va_arg(args,int);
-            if(ival<0){
-                ival=-ival;*s++='-';count++;
+    count = vsprintf(p,fmt,args);
+    va_end(args);
+    for(int i=0;i<count;i++){putch(p[i]);}
+    return count;
+}
+
+int vsprintf(char *out, const char *fmt, va_list args) {
+    int count=0;
+    int i=0;
+    char *out_s=out;
+    while(fmt[i]){
+	if(fmt[i]!='%'){	 /*只要不是 %，这跳过本次循环，进行下一次循环，直到找到下一个%*/
+		*out_s=fmt[i];
+        out_s++;
+        count++;
+        i++;
+        continue;
+    }
+    switch(fmt[++i]){
+        case 'd':
+            int ival;
+            ival=va_arg(args,int);
+            char temp[32]={};
+            int length=0;
+            while(1){
+                temp[length] = ival % 10 + '0';
+                ival = ival / 10;
+                length++;
+                if(ival == 0)break;
             }
-            else
-                print_deci(ival,&s,&count);
-			break;
-		case 's':
+            length--;
+            while(length >= 0){
+                *out_s++ = temp[length--];
+                count++;
+            }
+            break;
+        case 's':
+            char *sval; 
             for(sval=va_arg(args,char*);*sval;sval++){
-            *s++=*sval;
-            count++;
+                *out_s++ = *sval;
+                count++;
             }
-			break;
-		default:
-            *s++='%';
-            *s++=*p;
+            break;
+        case 'c':
+            char cval=va_arg(args,int);
+            *out_s++ = cval;
+            count++;
+            break;
+        default:
+            *out_s++='%';
+            *out_s++=fmt[i];
             count+=2;
 			break;
-		}
-	}
-    *s='\0';
+        }
+        i++;
+    }
+    *out_s = '\0';
+    return count;
+}
+int sprintf(char *out, const char *fmt, ...) {
+    va_list args;
+    int count=0;
+    va_start(args,fmt);
+    count = vsprintf(out,fmt,args);
     va_end(args);
     return count;
 }

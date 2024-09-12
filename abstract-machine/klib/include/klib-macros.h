@@ -6,6 +6,8 @@
 #define LENGTH(arr)         (sizeof(arr) / sizeof((arr)[0]))
 #define RANGE(st, ed)       (Area) { .start = (void *)(st), .end = (void *)(ed) }
 #define IN_RANGE(ptr, area) ((area).start <= (ptr) && (ptr) < (area).end)
+#define IN_char_RANGE(ptr, area) ((char*)(area).start <= (ptr) && (ptr) < (char*)(area).end)
+#define IN_void_RANGE(ptr, area) ((area).start <=(void*)(ptr) && (void*)(ptr) < (area).end)
 
 #define STRINGIFY(s)        #s
 #define TOSTRING(s)         STRINGIFY(s)
